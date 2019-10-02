@@ -57,6 +57,9 @@ def generate_map(screen, colorA):
 	draw.polygon(screen.get_surface(), colorA, create_rect(180, 170, (150, 150)))
 	draw.polygon(screen.get_surface(), colorA, create_rect(620, 230, (150, 150)))
 
+def calc_len_wosqrt(p1, p2):
+	return ((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+
 def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug):
 	i = 0
 	count_loop = 0
@@ -69,7 +72,7 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug):
 		if (pixel_arr[x, y] == screen.get_surface().map_rgb((0, 0, 0))):
 			flag = 1
 			for j in range(0, len(point_arr)):
-				if ((x - point_arr[j][0]) * (x - point_arr[j][0]) + (y - point_arr[j][1]) * (y - point_arr[j][1]) < delta * delta):
+				if (calc_len_wosqrt([x, y], point_arr[j]) < delta * delta):
 					flag = 0
 					count_loop += 1
 					break
@@ -79,11 +82,25 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug):
 				pixel_arr[x, y] = color
 				i += 1
 				count_loop = 0
-			elif count_loop > count / 3:
+			elif count_loop > count:
 				i = count
 	print(len(point_arr))
 	return point_arr
 
+def draw_triangulation_lines(screen, pixel_arr, points, delta):
+	dt = Delaunay2D()
+	seeds = np.array(points)
+	for i in seeds:
+		dt.addPoint(i)
+	tr = dt.exportTriangles()
+	print(len(tr))
+	for i in range(0, len(tr)):
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta * delta - 3 * delta):
+			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][1]], 1)
+		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta * delta - 3 * delta):
+			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][1]], points[tr[i][2]], 1)
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta * delta - 3 * delta):
+			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][2]], 1)
 
 
 def main():
@@ -93,6 +110,7 @@ def main():
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
 	delta_angle = 0.05
+	delta_rad = 10
 
 	ang = 3.14 / 4
 	rot_mat = [[cos(ang), -sin(ang)], [sin(ang), cos(ang)]]
@@ -112,14 +130,18 @@ def main():
 				if (check_coun(screen, pixel_arr, i, j, colorA)):
 					points = move_rect(i, j, rotation_rect)
 					draw.polygon(screen.get_surface(), colorAaug, points)
+					# draw.circle(screen.get_surface(), colorAaug, (i, j), 40)
 					generate_map(screen, colorA)
-		generate_data_points(screen, pixel_arr, 1000, 10, colorA, colorAaug)
+		p = generate_data_points(screen, pixel_arr, 1000, delta_rad, colorA, colorAaug)
+		draw_triangulation_lines(screen, pixel_arr, p, delta_rad)
 		screen.update()
 		pixel_arr[0:799, 0:400] = 0x000000
 		generate_map(screen, colorA)
 		ang += delta_angle
 		rot_mat = [[cos(ang), -sin(ang)], [sin(ang), cos(ang)]]
 		rotation_rect = matrixmult(create_rect(0, 0, (23, 71)), rot_mat)
+	while 1:
+		continue
 
 if __name__ == '__main__':
 	main()
