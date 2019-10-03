@@ -4,7 +4,7 @@ from math import *
 import random
 import numpy as np
 from delaunay2D import Delaunay2D
-import dijkstra 
+from dijkstra import *
 
 def check_coun(screen, pixel_arr, x, y, color):
 	if ((pixel_arr[x + 1, y] == screen.get_surface().map_rgb(color) or
@@ -61,9 +61,9 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b
 			elif count_loop > count:
 				i = count
 	print(len(point_arr))
-	draw.circle(screen.get_surface(), 0xFF0000, p_b, 3)
-	draw.circle(screen.get_surface(), 0xFF0000, p_m, 3)
-	draw.circle(screen.get_surface(), 0xFF0000, p_e, 3)
+	# draw.circle(screen.get_surface(), 0xFF0000, p_b, 3)
+	# draw.circle(screen.get_surface(), 0xFF0000, p_m, 3)
+	# draw.circle(screen.get_surface(), 0xFF0000, p_e, 3)
 	return point_arr
 
 def check_repeat_lines(screen, pixel_arr, p_begin, p_end, end_r):
@@ -80,7 +80,7 @@ def check_repeat_lines(screen, pixel_arr, p_begin, p_end, end_r):
 	else:
 		return 0
 
-def draw_triangulation_lines(screen, pixel_arr, points, delta):
+def draw_triangulation_lines(screen, pixel_arr, points, delta, graph):
 	dt = Delaunay2D()
 	seeds = np.array(points)
 	for i in seeds:
@@ -91,12 +91,29 @@ def draw_triangulation_lines(screen, pixel_arr, points, delta):
 		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta * delta and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][1]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][1]], 1)
+			graph.add_edge(tr[i][0], tr[i][1], calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]))
 		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta * delta and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][1]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][1]], points[tr[i][2]], 1)
+			graph.add_edge(tr[i][1], tr[i][2], calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]))
 		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta * delta and
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][2]], 1)
+			graph.add_edge(tr[i][0], tr[i][2], calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]))
+
+def draw_way(screen, graph, points, color_way):
+	way_to_cent, _ = dijkstra(graph, 0, 1)	
+	print('Way from point A to center {}'.format(way_to_cent))
+	way_to_end, _ = dijkstra(graph, 1, 2)	
+	print('Way from point center to B {}'.format(way_to_end))
+	way_max, _ = dijkstra(graph, 0, 2)
+	print('Way from point A to B {}'.format(way_max))
+	for i in range(1, len(way_to_cent)):
+		draw.line(screen.get_surface(), color_way, points[way_to_cent[i]], points[way_to_cent[i - 1]], 4)
+	for i in range(1, len(way_to_end)):
+		draw.line(screen.get_surface(), color_way, points[way_to_end[i]], points[way_to_end[i - 1]], 4)
+	for i in range(1, len(way_max)):
+		draw.line(screen.get_surface(), 0x00FF00, points[way_max[i]], points[way_max[i - 1]], 4)
 
 def main():
 	pygame.init()
@@ -104,7 +121,7 @@ def main():
 	size = (800, 400)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
-	delta_rad = 13
+	delta_rad = 7
 	start_point = (200, 300)
 	end_point = (600, 100)
 	middle_point = (400, 200)
@@ -123,8 +140,10 @@ def main():
 				draw.circle(screen.get_surface(), colorAaug, (i, j), 25)
 				generate_map(screen, colorA)
 
-	p = generate_data_points(screen, pixel_arr, 600, delta_rad, colorA, colorAaug, start_point, middle_point, end_point)
-	draw_triangulation_lines(screen, pixel_arr, p, delta_rad)
+	points = generate_data_points(screen, pixel_arr, 10000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point)
+	graph = GraphUndirectedWeighted(len(points))
+	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
+	draw_way(screen, graph, points, 0xFF0000)
 	screen.update()
 
 	while 1:
