@@ -61,9 +61,6 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b
 			elif count_loop > count:
 				i = count
 	print(len(point_arr))
-	# draw.circle(screen.get_surface(), 0xFF0000, p_b, 3)
-	# draw.circle(screen.get_surface(), 0xFF0000, p_m, 3)
-	# draw.circle(screen.get_surface(), 0xFF0000, p_e, 3)
 	return point_arr
 
 def check_repeat_lines(screen, pixel_arr, p_begin, p_end, end_r):
@@ -109,11 +106,11 @@ def draw_way(screen, graph, points, color_way):
 	way_max, _ = dijkstra(graph, 0, 2)
 	print('Way from point A to B {}'.format(way_max))
 	for i in range(1, len(way_to_cent)):
-		draw.line(screen.get_surface(), color_way, points[way_to_cent[i]], points[way_to_cent[i - 1]], 4)
+		draw.line(screen.get_surface(), color_way, points[way_to_cent[i]], points[way_to_cent[i - 1]], 6)
 	for i in range(1, len(way_to_end)):
-		draw.line(screen.get_surface(), color_way, points[way_to_end[i]], points[way_to_end[i - 1]], 4)
+		draw.line(screen.get_surface(), color_way, points[way_to_end[i]], points[way_to_end[i - 1]], 6)
 	for i in range(1, len(way_max)):
-		draw.line(screen.get_surface(), 0x00FF00, points[way_max[i]], points[way_max[i - 1]], 4)
+		draw.line(screen.get_surface(), 0x00FF00, points[way_max[i]], points[way_max[i - 1]], 3)
 
 def main():
 	pygame.init()
@@ -121,9 +118,10 @@ def main():
 	size = (800, 400)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
-	delta_rad = 7
-	start_point = (200, 300)
-	end_point = (600, 100)
+	delta_rad = 10
+	robot_rad = 20
+	start_point = (50, 170)
+	end_point = (750, 200)
 	middle_point = (400, 200)
 
 	screen = pygame.display
@@ -137,10 +135,10 @@ def main():
 	for i in range(1, size[0] - 1):
 		for j in range(1, size[1] - 1):
 			if (check_coun(screen, pixel_arr, i, j, colorA)):
-				draw.circle(screen.get_surface(), colorAaug, (i, j), 25)
+				draw.circle(screen.get_surface(), colorAaug, (i, j), robot_rad)
 				generate_map(screen, colorA)
 
-	points = generate_data_points(screen, pixel_arr, 10000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point)
+	points = generate_data_points(screen, pixel_arr, 2000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point)
 	graph = GraphUndirectedWeighted(len(points))
 	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
 	draw_way(screen, graph, points, 0xFF0000)
