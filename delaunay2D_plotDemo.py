@@ -4,7 +4,7 @@ from random import *
 
 if __name__ == '__main__':
 
-    numSeeds = 1000
+    numSeeds = 4
     radius = 1000
     seed = []
     for i in range(0, numSeeds):
@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     # Dump number of DT triangles
     print (len(dt.exportTriangles()))
+    print(dt.exportTriangles())
        
     """
     Demostration of how to plot the data.
