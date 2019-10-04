@@ -27,13 +27,14 @@ def generate_map(screen, colorA):
 	draw.line(screen.get_surface(), colorA, (800, 400), (800, 0), 20)
 	draw.line(screen.get_surface(), colorA, (400, 400), (400, 275), 20)
 	draw.line(screen.get_surface(), colorA, (400, 0), (400, 125), 20)
+	# draw.circle(screen.get_surface(), colorA, (400, 300), 125)
 	draw.polygon(screen.get_surface(), colorA, create_rect(180, 170, (150, 150)))
 	draw.polygon(screen.get_surface(), colorA, create_rect(620, 230, (150, 150)))
 
 def calc_len_wosqrt(p1, p2):
-	return ((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+	return int(sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))))
 
-def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b, p_m, p_e):
+def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b, p_m, p_e, size):
 	i = 0
 	count_loop = 0
 	point_arr = []
@@ -43,12 +44,12 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b
 	color = (255, 255, 255)
 	while (i < count):
 		count_loop += 1
-		x = int(random.randint(0, 799))
-		y = int(random.randint(0, 399))
+		x = int(random.randint(0, size[0] - 1))
+		y = int(random.randint(0, size[1] - 1))
 		if (pixel_arr[x, y] == screen.get_surface().map_rgb((0, 0, 0))):
 			flag = 1
 			for j in range(0, len(point_arr)):
-				if (calc_len_wosqrt([x, y], point_arr[j]) < delta * delta):
+				if (calc_len_wosqrt([x, y], point_arr[j]) < delta):
 					flag = 0
 					count_loop += 1
 					break
@@ -85,26 +86,28 @@ def draw_triangulation_lines(screen, pixel_arr, points, delta, graph):
 	tr = dt.exportTriangles()
 	print(len(tr))
 	for i in range(0, len(tr)):
-		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta * delta and 
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][1]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][1]], 1)
 			graph.add_edge(tr[i][0], tr[i][1], calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]))
-		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta * delta and 
+		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][1]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][1]], points[tr[i][2]], 1)
 			graph.add_edge(tr[i][1], tr[i][2], calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]))
-		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta * delta and
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta and
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][2]], 1)
 			graph.add_edge(tr[i][0], tr[i][2], calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]))
 
 def draw_way(screen, graph, points, color_way):
-	way_to_cent, _ = dijkstra(graph, 0, 1)	
+	way_to_cent, l1 = dijkstra(graph, 0, 1)	
 	print('Way from point A to center {}'.format(way_to_cent))
-	way_to_end, _ = dijkstra(graph, 1, 2)	
+	way_to_end, l2 = dijkstra(graph, 1, 2)	
 	print('Way from point center to B {}'.format(way_to_end))
-	way_max, _ = dijkstra(graph, 0, 2)
+	way_max, l3 = dijkstra(graph, 0, 2)
 	print('Way from point A to B {}'.format(way_max))
+	print('Total length with center point: {}'.format(l1 + l2))
+	print('Total length without center point: {}'.format(l3))
 	for i in range(1, len(way_to_cent)):
 		draw.line(screen.get_surface(), color_way, points[way_to_cent[i]], points[way_to_cent[i - 1]], 6)
 	for i in range(1, len(way_to_end)):
@@ -118,11 +121,11 @@ def main():
 	size = (800, 400)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
-	delta_rad = 10
-	robot_rad = 20
-	start_point = (50, 170)
-	end_point = (750, 200)
+	delta_rad = 15
+	robot_rad = 15
+	start_point = (50, 70)
 	middle_point = (400, 200)
+	end_point = (750, 200)
 
 	screen = pygame.display
 
@@ -138,7 +141,7 @@ def main():
 				draw.circle(screen.get_surface(), colorAaug, (i, j), robot_rad)
 				generate_map(screen, colorA)
 
-	points = generate_data_points(screen, pixel_arr, 2000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point)
+	points = generate_data_points(screen, pixel_arr, 1000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
 	graph = GraphUndirectedWeighted(len(points))
 	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
 	draw_way(screen, graph, points, 0xFF0000)
