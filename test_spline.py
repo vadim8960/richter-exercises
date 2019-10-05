@@ -6,7 +6,6 @@ import numpy as np
 from delaunay2D import Delaunay2D
 from dijkstra import *
 import numpy
-from catmullromsplines import *
 
 def make_derivative(p1, p2):
 	return (p1[0], (p1[1] - p2[1]) / (p1[0] - p2[0]))
