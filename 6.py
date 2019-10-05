@@ -136,7 +136,7 @@ def main():
 	screen = pygame.display
 
 	screen.init()
-	screen.set_mode(size)
+	screen.set_mode(size, pygame.RESIZABLE)
 	
 	pixel_arr = pygame.PixelArray(screen.get_surface())
 
