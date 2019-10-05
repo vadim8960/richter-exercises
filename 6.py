@@ -2,7 +2,6 @@ import pygame
 from pygame import *
 from math import *
 import random
-import numpy as np
 from delaunay2D import *
 from dijkstra import *
 from catmullromsplines import *
@@ -28,7 +27,6 @@ def generate_map(screen, colorA):
 	draw.line(screen.get_surface(), colorA, (800, 400), (800, 0), 20)
 	draw.line(screen.get_surface(), colorA, (400, 400), (400, 275), 20)
 	draw.line(screen.get_surface(), colorA, (400, 0), (400, 125), 20)
-	# draw.circle(screen.get_surface(), colorA, (400, 300), 125)
 	draw.polygon(screen.get_surface(), colorA, create_rect(180, 170, (150, 150)))
 	draw.polygon(screen.get_surface(), colorA, create_rect(620, 230, (150, 150)))
 
@@ -88,15 +86,15 @@ def draw_triangulation_lines(screen, pixel_arr, points, delta, graph):
 	tr = dt.exportTriangles()
 	print('Count triangles: {}'.format(len(tr)))
 	for i in range(0, len(tr)):
-		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta * delta and 
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][1]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][1]], 1)
 			graph.add_edge(tr[i][0], tr[i][1], calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]))
-		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta * delta  and 
+		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta  and 
 			check_repeat_lines(screen, pixel_arr, points[tr[i][1]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][1]], points[tr[i][2]], 1)
 			graph.add_edge(tr[i][1], tr[i][2], calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]))
-		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta * delta  and
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta  and
 			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][2]], 1)
 			graph.add_edge(tr[i][0], tr[i][2], calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]))
@@ -116,16 +114,12 @@ def draw_way(screen, graph, points, color_way):
 
 	spline_points = catmullrom_splines(spline_points)
 
-	# way_max, l3 = dijkstra(graph, 0, 2)
-	# print('Way from point A to B {}'.format(way_max))
 	print('Total length with center point: {}'.format(l1 + l2))
-	# print('Total length without center point: {}'.format(l3))
+
 	for i in range(1, len(spline_points)):
 		draw.line(screen.get_surface(), 0x00FF00, spline_points[i - 1], spline_points[i], 4)
 	for i in range(1, len(way)):
 		draw.line(screen.get_surface(), color_way, points[way[i]], points[way[i - 1]], 2)
-	# for i in range(1, len(way_max)):
-	# 	draw.line(screen.get_surface(), 0x00FF00, points[way_max[i]], points[way_max[i - 1]], 3)
 
 def main():
 	pygame.init()
@@ -133,7 +127,7 @@ def main():
 	size = (800, 400)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
-	delta_rad = 17
+	delta_rad = 27
 	robot_rad = 15
 	start_point = (50, 70)
 	middle_point = (400, 200)
