@@ -19,14 +19,10 @@ def find_shortest(set_a, set_b, delta):
 							min_p[k][1] = set_b[j]
 							min_p[k][2] = calc_len_wosqrt(set_a[i], set_b[j])
 						flag = 0
-												
+
 				if flag:		
 					min_p.append( [set_a[i], set_b[j], calc_len_wosqrt(set_a[i], set_b[j])] )
 	return min_p
-
-def get_unique(arr):
-	print(arr)
-
 
 def draw_map(screen, set_a, colora, set_b, colorb, shortes_way):
 	for i in range(len(set_a)):
@@ -80,8 +76,6 @@ def main():
 	screen.set_mode(size, pygame.RESIZABLE)
 	
 	pixel_arr = pygame.PixelArray(screen.get_surface())
-
-	get_unique(find_shortest(set_a, set_b, delta))
 
 	draw_map(screen, set_a, colorA, set_b, colorB, find_shortest(set_a, set_b, delta))
 
