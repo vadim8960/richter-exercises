@@ -12,6 +12,7 @@ def g_f(x, s, m):
 def gauss_function(sigma, m, n):
 	b = m - n / 3
 	e = m + n / 3
+
 	step = (e - b) / n
 	arr = []
 	for i in range(n):
@@ -71,7 +72,7 @@ def main():
 	angle = 45
 	dist = 100
 	sigma_d = 5
-	sigma_a = 5
+	sigma_a = 2
 	count_p = 50000
 
 	screen = pygame.display
