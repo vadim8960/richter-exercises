@@ -10,17 +10,17 @@ def g_f(x, s, m):
 	return ( 1/(sqrt(2*pi)*s)*e**(-0.5*(float(x-m)/s)**2) )
 
 def gauss_function(sigma, m, n):
-	b = m - sigma * 1.5
-	e = m + sigma * 1.5
+	b = m - n / 3
+	e = m + n / 3
 	step = (e - b) / n
 	arr = []
 	for i in range(n):
-		arr.append((int(b), 10000 * g_f(b, sigma, m)))
+		arr.append((int(b), 10000000 * g_f(b, sigma, m)))
 		b += step
 	return arr
 
 def get_rand_elem(list_d):
-	return list_d[random.randint(0, len(list_d))]
+	return list_d[random.randint(0, len(list_d) - 1)]
 
 def get_unique(arr):
 	res = []
@@ -72,7 +72,7 @@ def main():
 	dist = 100
 	sigma_d = 5
 	sigma_a = 5
-	count_p = 50
+	count_p = 50000
 
 	screen = pygame.display
 
@@ -87,6 +87,7 @@ def main():
 
 	for i in range(len(points_end)):
 		pixel_arr[points_end[i]] = rand_color()
+		# pixel_arr[points_end[i]] = 0xFFFFFF
 
 	screen.update()
 
