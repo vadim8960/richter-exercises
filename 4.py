@@ -126,7 +126,7 @@ def main():
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
 	delta_angle = 0.05
-	delta_rad = 13
+	delta_rad = 10
 
 	ang = 3.14 / 4
 	rot_mat = [[cos(ang), -sin(ang)], [sin(ang), cos(ang)]]

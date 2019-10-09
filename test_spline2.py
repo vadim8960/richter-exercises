@@ -12,8 +12,7 @@ def generate_map(screen, colorA, points, points_spl):
 	for i in range(1, len(points)):
 		draw.line(screen.get_surface(), 0xFF0000, points[i - 1], points[i], 5)
 	for i in range(1, len(points_spl)):
-		draw.line(screen.get_surface(), 0x00FF00, points_spl[i - 1], points_spl[i], 5)
-
+		draw.line(screen.get_surface(), 0x00FF00, points_spl[i - 1], points_spl[i], 2)
 
 def main():
 	pygame.init()
@@ -36,6 +35,8 @@ def main():
 	points.append((230, 170))
 	points.append((240, 100))
 	points.append(points[0])
+	points.append(points[1])
+	points.append(points[2])
 
 	screen = pygame.display
 

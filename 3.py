@@ -108,7 +108,7 @@ def main():
 					points = move_rect(i, j, rotation_rect)
 					draw.polygon(screen.get_surface(), colorAaug, points)
 					generate_map(screen, colorA)
-		generate_data_points(screen, pixel_arr, 1000, 10, colorA, colorAaug)
+		generate_data_points(screen, pixel_arr, 1000, 20, colorA, colorAaug)
 		screen.update()
 		pixel_arr[0:799, 0:400] = 0x000000
 		generate_map(screen, colorA)
