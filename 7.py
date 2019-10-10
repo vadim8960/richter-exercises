@@ -70,10 +70,10 @@ def main():
 	colorAaug = (128, 194, 255)
 	point_st = (100, 100)
 	angle = 45
-	dist = 100
+	dist = 1
 	sigma_d = 5
 	sigma_a = 2
-	count_p = 50000
+	count_p = 
 
 	screen = pygame.display
 

@@ -37,38 +37,52 @@ def draw_map(screen, set_a, colora, set_b, colorb, shortes_way):
 	screen.update()
 
 def main():
+
+	task = int(input())
+
 	pygame.init()
 
 	size = (1000, 1000)
 	colorA = 0x00FF00
 	colorB = 0x0000FF
-	delta = 30
+	delta = 40
 
 	set_a = []
-	set_a.append([245, 182])
-	set_a.append([263, 180])
-	set_a.append([287, 176])
-	set_a.append([301, 181])
-	set_a.append([311, 178])
-	set_a.append([320, 179])
-	set_a.append([330, 179])
-	set_a.append([338, 176])
-	set_a.append([348, 180])
-	# set_a.append((699, 131))
-	# set_a.append((698, 198))
-	# set_a.append((699, 246))
-	# set_a.append((700, 343))
-
 	set_b = []
-	set_b.append([254, 156])
-	set_b.append([296, 164])
-	set_b.append([318, 168])
-	set_b.append([331, 172])
-	set_b.append([342, 174])
-	# set_b.append((660, 376))
-	# set_b.append((671, 310))
-	# set_b.append((682, 248))
-	# set_b.append((692, 193))
+	if task == 1:
+		set_a.append([245, 182])
+		set_a.append([263, 180])
+		set_a.append([287, 176])
+		set_a.append([301, 181])
+		set_a.append([311, 178])
+		set_a.append([320, 179])
+		set_a.append([330, 179])
+		set_a.append([338, 176])
+		set_a.append([348, 180])
+
+		set_b.append([254, 156])
+		set_b.append([296, 164])
+		set_b.append([318, 168])
+		set_b.append([331, 172])
+		set_b.append([342, 174])
+
+		for i in range(len(set_a)):
+			set_a[i][0] *= 2
+			set_a[i][1] *= 2
+
+		for i in range(len(set_b)):
+			set_b[i][0] *= 2
+			set_b[i][1] *= 2
+	else:
+		set_a.append((699, 131))
+		set_a.append((698, 198))
+		set_a.append((699, 246))
+		set_a.append((700, 343))
+
+		set_b.append((660, 376))
+		set_b.append((671, 310))
+		set_b.append((682, 248))
+		set_b.append((692, 193))
 
 	screen = pygame.display
 
