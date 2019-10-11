@@ -10,16 +10,6 @@ def d2r(d):
 def r2d(r):
 	return int(r * 57.296)
 
-def min_v(a, b):
-	if (a > b):
-		return b
-	return a
-
-def max_v(a, b):
-	if (a < b):
-		return b
-	return a
-
 def g_f(x, s, m):
 	return ( 1/(sqrt(2*pi)*s)*e**(-0.5*(float(x-m)/s)**2) )
 
@@ -77,13 +67,13 @@ def generate_map(screen, colorA):
 	draw.line(screen.get_surface(), colorA, (0, 0), (0, 600), 10)
 	draw.line(screen.get_surface(), colorA, (0, 600), (900, 600), 10)
 	draw.line(screen.get_surface(), colorA, (900, 600), (900, 0), 10)
-	draw.line(screen.get_surface(), colorA, (450, 600), (450, 400), 10)
-	draw.line(screen.get_surface(), colorA, (450, 0), (450, 200), 10)
+	draw.line(screen.get_surface(), colorA, (400, 600), (450, 200), 10)
+	draw.line(screen.get_surface(), colorA, (320, 0), (320, 200), 10)
 
-	draw.polygon(screen.get_surface(), colorA, create_rect(280, 190, (200, 125)))
+	draw.polygon(screen.get_surface(), colorA, create_rect(225, 190, (200, 125)))
 	draw.circle(screen.get_surface(), colorA, (225, 450), 75)
 	draw.polygon(screen.get_surface(), colorA, create_rect(675, 420, (250, 30)))
-	draw.circle(screen.get_surface(), colorA, (700, 190), 120)
+	# draw.circle(screen.get_surface(), colorA, (670, 190), 140)
 
 def draw_minkovsky_sum(screen, pixel_arr, colorA, colorAaug, robot_rad, size):
 	for i in range(1, size[0] - 1):
@@ -115,7 +105,7 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, siz
 
 			if flag:
 				ang = get_random_angle()
-				point_arr.append([(x, y), ang, 0])
+				point_arr.append([(x, y), ang, 0,])
 				draw.line(screen.get_surface(), 0xFFFFFF, (x, y), (int(x + 6 * cos(ang)), int(y + 6 * sin(ang))), 1)
 				draw.circle(screen.get_surface(), 0xFFFFFF, (x, y), 2)
 				# pixel_arr[x, y] = color
@@ -151,37 +141,31 @@ def calc_dist_lidar_beam(screen, pixel_arr, part, color):
 			if (pixel_arr[new_x, new_y] == screen.get_surface().map_rgb(color)):
 				dist -= 1
 				break
-			# pixel_arr[new_x, new_y] = 0xFFFFFF
+
+			pixel_arr[new_x, new_y] = 0xFFFFFF
 			dist += 1
 		part[i][2] = dist
 
 def draw_particles(screen, pixel_arr, part, color):
 	for i in range(len(part)):
 		draw.circle(screen.get_surface(), color, (part[i][0][0], part[i][0][1]), 2)
-		# pixel_arr[part[i][0][0], part[i][0][1]] = color
 		draw.line(screen.get_surface(), color, (part[i][0][0], part[i][0][1]), (int(part[i][0][0] + 6 * cos(part[i][1])), int(part[i][0][1] + 6 * sin(part[i][1]))), 1)
-	
 
-def calc_probabilities(particles, robot):
+def calc_probabilities(particles, robot, delta):
 	dist = robot[0][2]
 	max_prob = 0
 	for i in range(len(particles)):
-		particles[i][2] = min_v(particles[i][2], dist) / max_v(particles[i][2], dist)
+		particles[i][2] = exp( -(float((particles[i][2] - dist))**2)/(2 * delta**2) )
+
 		if (particles[i][2] > max_prob):
 			max_prob = particles[i][2]
 	return max_prob
 
-def remove_small_prob_part(particles, robot):
-	max_prob = calc_probabilities(particles, robot)
-	c = len(particles) // 10
-	for i in range(c):
-		m = 100
-		index = 0
-		for j in range(len(particles)):
-			if (particles[i][2] < m):
-				m = particles[i][2]
-				index = i
-		particles.remove(particles[index])
+def remove_small_prob_part(particles, robot, delta):
+	max_prob = calc_probabilities(particles, robot, delta)
+
+	#             TODO:
+	# Reduce max count of particles by 10%
 
 	count_remove = len(particles)
 	res = []
@@ -203,8 +187,8 @@ def generate_gauss_particles(particles, count_remove):
 	sigma_a = 10
 	res = []
 	for i in range(len(particles)):
-		res.append(particles[i])
-		count_new_p = trunc(particles[i][2] * count_remove)
+		# res.append(particles[i])
+		count_new_p = int(particles[i][2] * count_remove)
 
 		gauss_points_x = get_unique(gauss_function(sigma_d, particles[i][0][0], 100))
 		gauss_points_y = get_unique(gauss_function(sigma_d, particles[i][0][1], 100))
@@ -240,12 +224,12 @@ def shift_particles(particles, robot, delta):
 	for i in range(len(particles)):
 		x = int(particles[i][0][0] + delta * cos(particles[i][1]))
 		y = int(particles[i][0][1] + delta * sin(particles[i][1]))
+
 		res_p.append([(x, y), particles[i][1], 0])
 
-	for i in range(len(robot)):
-		x = int(robot[i][0][0] + delta * cos(robot[i][1]))
-		y = int(robot[i][0][1] + delta * sin(robot[i][1]))
-		res_r.append([(x, y), robot[i][1], 0])
+	x = int(robot[0][0][0] + delta * cos(robot[0][1]))
+	y = int(robot[0][0][1] + delta * sin(robot[0][1]))
+	res_r.append([(x, y), robot[0][1], 0])
 	return res_p, res_r
 	
 def check_particles(particles, size, delta):
@@ -253,23 +237,24 @@ def check_particles(particles, size, delta):
 	for i in range(len(particles)):
 		if (particles[i][0][0] < 0 or particles[i][0][0] >= size[0] or
 			particles[i][0][1] < 0 or particles[i][0][1] >= size[1] or 
-			((particles[i][0][0] < delta or particles[i][0][0] >= size[0] - delta) and
-			(particles[i][0][1] < delta or particles[i][0][1] >= size[1] - delta))):
+			((particles[i][0][0] < delta * 2 or particles[i][0][0] >= size[0] - delta * 2) and
+			(particles[i][0][1] < delta * 2 or particles[i][0][1] >= size[1] - delta * 2))):
 			continue
 		res.append(particles[i])
 	return res
 
-def rotate_robot(robot, delta):
-	if (robot[0][2] < delta):
-		robot[0][1] += d2r(90)
+def rotate_particles(particles, robot, ang):
+	robot[0][1] += d2r(ang)
+	for i in range(len(particles)):
+		particles[i][1] += d2r(ang)
 
 def main():
 	size = (900, 600)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
 	colorRobot = 0xFF0000
-	delta_rad = 20
-	count_particles = 500
+	delta_rad = 12
+	count_particles = 2500
 
 	pygame.init()
 	screen = pygame.display
@@ -286,25 +271,16 @@ def main():
 
 	while 1:
 		particles = check_particles(particles, size, delta_rad)
+
+		rotate_particles(particles, robot, 50)
+
 		calc_dist_lidar_beam(screen, pixel_arr, particles, colorA)
 		calc_dist_lidar_beam(screen, pixel_arr, robot, colorA)
-		while (robot[0][2] < delta_rad):
-			rotate_robot(robot, delta_rad)
-			calc_dist_lidar_beam(screen, pixel_arr, robot, colorA)
-		screen.update()
 
-		particles, count_remove = remove_small_prob_part(particles, robot)
-		print(count_remove)
-
+		particles, count_remove = remove_small_prob_part(particles, robot, delta_rad) 
+		
 		norm_particles(particles)
 		particles = generate_gauss_particles(particles, count_particles)
-		pixel_arr[:][:] = 0x000000
-		draw_particles(screen, pixel_arr, particles, 0xFFFFFF)
-		draw_particles(screen, pixel_arr, robot, colorRobot)
-		generate_map(screen, colorA)
-		screen.update()
-
-		time.sleep(2)
 
 		particles, robot = shift_particles(particles, robot, delta_rad)
 		pixel_arr[:][:] = 0x000000
