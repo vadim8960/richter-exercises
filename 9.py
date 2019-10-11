@@ -67,8 +67,12 @@ def generate_map(screen, colorA):
 	draw.line(screen.get_surface(), colorA, (0, 0), (0, 600), 10)
 	draw.line(screen.get_surface(), colorA, (0, 600), (900, 600), 10)
 	draw.line(screen.get_surface(), colorA, (900, 600), (900, 0), 10)
-	draw.line(screen.get_surface(), colorA, (400, 600), (450, 200), 10)
+
+	draw.line(screen.get_surface(), colorA, (450, 600), (450, 200), 10)
+	draw.line(screen.get_surface(), colorA, (450, 200), (750, 200), 10)
 	draw.line(screen.get_surface(), colorA, (320, 0), (320, 200), 10)
+	draw.line(screen.get_surface(), colorA, (700, 600), (700, 420), 10)
+	# draw.line(screen.get_surface(), colorA, (225, 450), (225, 200), 10)
 
 	draw.polygon(screen.get_surface(), colorA, create_rect(225, 190, (200, 125)))
 	draw.circle(screen.get_surface(), colorA, (225, 450), 75)
@@ -149,7 +153,8 @@ def calc_dist_lidar_beam(screen, pixel_arr, part, color):
 def draw_particles(screen, pixel_arr, part, color):
 	for i in range(len(part)):
 		draw.circle(screen.get_surface(), color, (part[i][0][0], part[i][0][1]), 2)
-		draw.line(screen.get_surface(), color, (part[i][0][0], part[i][0][1]), (int(part[i][0][0] + 6 * cos(part[i][1])), int(part[i][0][1] + 6 * sin(part[i][1]))), 1)
+		draw.line(screen.get_surface(), color, (part[i][0][0], part[i][0][1]),
+		             (int(part[i][0][0] + 6 * cos(part[i][1])), int(part[i][0][1] + 6 * sin(part[i][1]))), 1)
 
 def calc_probabilities(particles, robot, delta):
 	dist = robot[0][2]
@@ -167,7 +172,21 @@ def remove_small_prob_part(particles, robot, delta):
 	#             TODO:
 	# Reduce max count of particles by 10%
 
+	count_loop = int(len(particles) * 0.1)
+
+	print('Before remove: {}'.format(len(particles)))
+	for i in range(count_loop):
+		index = 0
+		min_p = 1000000
+		for j in range(len(particles)):
+			if (particles[i][2] < min_p):
+				inxed = j
+				min_p = particles[j][2]
+		particles.remove(particles[index])
+
 	count_remove = len(particles)
+	print('After remove: {}\n-----------------------'.format(count_remove))
+
 	res = []
 	for i in range(len(particles)):
 		if (particles[i][2] > 0.5 * max_prob):
@@ -182,13 +201,11 @@ def norm_particles(particles):
 	for i in range(len(particles)):
 		particles[i][2] /= s
 
-def generate_gauss_particles(particles, count_remove):
-	sigma_d = 15
-	sigma_a = 10
+def generate_gauss_particles(particles, count_remove, sigma_a, sigma_d):
 	res = []
 	for i in range(len(particles)):
-		# res.append(particles[i])
-		count_new_p = int(particles[i][2] * count_remove)
+		res.append(particles[i])
+		count_new_p = int(particles[i][2] * count_remove * 0.5)
 
 		gauss_points_x = get_unique(gauss_function(sigma_d, particles[i][0][0], 100))
 		gauss_points_y = get_unique(gauss_function(sigma_d, particles[i][0][1], 100))
@@ -232,13 +249,15 @@ def shift_particles(particles, robot, delta):
 	res_r.append([(x, y), robot[0][1], 0])
 	return res_p, res_r
 	
-def check_particles(particles, size, delta):
+def check_particles(screen, pixel_arr, particles, size, delta, color):
 	res = []
 	for i in range(len(particles)):
 		if (particles[i][0][0] < 0 or particles[i][0][0] >= size[0] or
 			particles[i][0][1] < 0 or particles[i][0][1] >= size[1] or 
-			((particles[i][0][0] < delta * 2 or particles[i][0][0] >= size[0] - delta * 2) and
-			(particles[i][0][1] < delta * 2 or particles[i][0][1] >= size[1] - delta * 2))):
+		  ((particles[i][0][0] < delta * 2 or particles[i][0][0] >= size[0] - delta * 2) and
+		   (particles[i][0][1] < delta * 2 or particles[i][0][1] >= size[1] - delta * 2))):
+			continue
+		if (pixel_arr[particles[i][0][0], particles[i][0][1]] == screen.get_surface().map_rgb(color)):
 			continue
 		res.append(particles[i])
 	return res
@@ -248,13 +267,33 @@ def rotate_particles(particles, robot, ang):
 	for i in range(len(particles)):
 		particles[i][1] += d2r(ang)
 
+def move_new_position(screen, pixel_arr, robot, color):
+	max_a = 0
+	max_d = -1
+	res = []
+	for i in range(360):
+		robot[0][1] = d2r(i)
+		calc_dist_lidar_beam(screen, pixel_arr, robot, color)
+		if (robot[0][2] > max_d):
+			max_d = robot[0][2]
+			max_a = i
+
+	# robot[0][0][0] = robot[0][0][0] + 0.5 * max_d * cos(d2r(max_a))
+	# robot[0][0][1] = robot[0][0][1] + 0.5 * max_d * sin(d2r(max_a))
+	# robot[0][1] = d2r(max_a)
+	res.append([(int(robot[0][0][0] + 0.5 * max_d * cos(d2r(max_a))), int(robot[0][0][1] + 0.5 * max_d * sin(d2r(max_a)))),
+	               d2r(max_a), 0])
+	return res
+
 def main():
 	size = (900, 600)
 	colorA = (0, 128, 255)
 	colorAaug = (128, 194, 255)
 	colorRobot = 0xFF0000
-	delta_rad = 12
+	delta_rad = 15
 	count_particles = 2500
+	sigma_d = 15
+	sigma_a = 10
 
 	pygame.init()
 	screen = pygame.display
@@ -270,9 +309,7 @@ def main():
 	screen.update()
 
 	while 1:
-		particles = check_particles(particles, size, delta_rad)
-
-		rotate_particles(particles, robot, 50)
+		particles = check_particles(screen, pixel_arr, particles, size, delta_rad, colorA)
 
 		calc_dist_lidar_beam(screen, pixel_arr, particles, colorA)
 		calc_dist_lidar_beam(screen, pixel_arr, robot, colorA)
@@ -280,14 +317,28 @@ def main():
 		particles, count_remove = remove_small_prob_part(particles, robot, delta_rad) 
 		
 		norm_particles(particles)
-		particles = generate_gauss_particles(particles, count_particles)
+		particles = generate_gauss_particles(particles, count_particles, sigma_a, sigma_d)
 
-		particles, robot = shift_particles(particles, robot, delta_rad)
+		# particles, robot = shift_particles(particles, robot, delta_rad)
 		pixel_arr[:][:] = 0x000000
 		draw_particles(screen, pixel_arr, particles, 0xFFFFFF)
 		draw_particles(screen, pixel_arr, robot, colorRobot)
 		generate_map(screen, colorA)
 		screen.update()
+		sigma_d -= 0.5
+		if (not sigma_d):
+			sigma_d = 10
+		if (not len(particles)):
+			sigma_d = 15
+			robot = move_new_position(screen, pixel_arr, robot, colorA)
+			# particles, robot = shift_particles(particles, robot, delta_rad)
+			generate_map(screen, colorA)
+			draw_minkovsky_sum(screen, pixel_arr, colorA, colorAaug, delta_rad, size)
+			particles = generate_data_points(screen, pixel_arr, count_particles, delta_rad, colorA, colorAaug, size)
+			draw_minkovsky_sum(screen, pixel_arr, colorA, 0x000000, delta_rad, size)
+			screen.update()
+
+		rotate_particles(particles, robot, 13)
 
 	while 1:
 		pass
