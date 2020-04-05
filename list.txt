@@ -31,20 +31,20 @@ def generate_map(screen,  colorA):
 	draw.polygon(screen.get_surface(), colorA, create_rect(180, 170, (150, 150)))
 	draw.polygon(screen.get_surface(), colorA, create_rect(620, 230, (150, 150)))
 
-def calc_len(p1, p2):
-	return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])))
+def calc_len_wosqrt(p1, p2):
+	return int(sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))))
 
 def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b, p_m, p_e, size):
 	i = 0
-	color = (255, 255, 255)
 	count_loop = 0
 	point_arr = []
 	point_arr.append(p_b)
 	point_arr.append(p_m)
 	point_arr.append(p_e)
-	draw.circle(screen.get_surface(), (255, 0, 0), p_b, 1)
-	draw.circle(screen.get_surface(), (0, 255, 0), p_m, 1)
-	draw.circle(screen.get_surface(), (255, 0, 0), p_e, 1)
+	draw.circle(screen.get_surface(), (255, 0, 0), p_b, 5)
+	draw.circle(screen.get_surface(), (0, 255, 0), p_m, 5)
+	draw.circle(screen.get_surface(), (255, 0, 0), p_e, 5)
+	color = (255, 255, 255)
 	while (i < count):
 		count_loop += 1
 		x = int(random.randint(0, size[0] - 1))
@@ -52,7 +52,7 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b
 		if (pixel_arr[x, y] == screen.get_surface().map_rgb((0, 0, 0))):
 			flag = 1
 			for j in range(0, len(point_arr)):
-				if (calc_len([x, y], point_arr[j]) < delta):
+				if (calc_len_wosqrt([x, y], point_arr[j]) < delta):
 					flag = 0
 					count_loop += 1
 					break
@@ -69,36 +69,22 @@ def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b
 	print('Count data points: {}'.format(len(point_arr)))
 	return point_arr
 
-def check_collision(screen, pixel_arr, p_begin, p_end, delta):
-	if (pixel_arr[(p_begin[0] + p_end[0]) // 2, (p_begin[1] + p_end[1]) // 2] != screen.get_surface().map_rgb((0, 0, 0))):
+def check_repeat_lines(screen, pixel_arr, p_begin, p_end, end_r):
+	end_r += 1
+	x_c = abs(p_begin[0] + p_end[0]) // 2
+	y_c = abs(p_begin[1] + p_end[1]) // 2
+	if end_r > 2:
+		if (pixel_arr[x_c, y_c] == screen.get_surface().map_rgb((0, 0, 0))):
+			return 1
+		else:
+			return 0
+	if (pixel_arr[x_c, y_c] == screen.get_surface().map_rgb((0, 0, 0))):
+		return (check_repeat_lines(screen, pixel_arr, [x_c, y_c], p_end, end_r) and 
+			    check_repeat_lines(screen, pixel_arr, p_begin, [x_c, y_c], end_r))
+	else:
 		return 0
-	flag_vertic = 0
-	if (p_begin[0] == p_end[0]):
-		flag_vertic = 1
-	else:
-		A = p_begin[1] - p_end[1]
-		B = p_end[0] - p_begin[0]
-		C = p_begin[0] * p_end[1] - p_end[0] * p_begin[1]
-		k = -float(A) / float(B)
-		v = -float(C) / float(B)
-
-	if (flag_vertic == 0):
-		s_p = min(p_begin[0], p_end[0]) + 3
-		s_e = max(p_begin[0], p_end[0]) - 3
-		for i in range(s_p, s_e):
-			if (pixel_arr[i, int(k * i + v)] != screen.get_surface().map_rgb((0, 0, 0))):
-				return 0
-	else:
-		s_p = min(p_begin[1], p_end[1]) + 3
-		s_e = max(p_begin[1], p_end[1]) - 3
-		for i in range(s_p, s_e):
-			if (pixel_arr[p_begin[0], i] != screen.get_surface().map_rgb((0, 0, 0))):
-				return 0
-		
-	return 1
 
 def draw_triangulation_lines(screen, pixel_arr, points, delta, graph):
-	flag = 0
 	dt = Delaunay2D()
 	seeds = np.array(points)
 	for i in seeds:
@@ -106,25 +92,20 @@ def draw_triangulation_lines(screen, pixel_arr, points, delta, graph):
 	tr = dt.exportTriangles()
 	print('Count triangles: {}'.format(len(tr)))
 	for i in range(0, len(tr)):
-		if (check_collision(screen, pixel_arr, points[tr[i][0]], points[tr[i][1]], delta)):
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]) <= delta * delta and 
+			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][1]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][1]], 1)
-			graph.add_edge(tr[i][0], tr[i][1], calc_len(points[tr[i][0]], points[tr[i][1]]))
-			flag = 1
-
-		if (check_collision(screen, pixel_arr, points[tr[i][1]], points[tr[i][2]], delta)):
+			graph.add_edge(tr[i][0], tr[i][1], calc_len_wosqrt(points[tr[i][0]], points[tr[i][1]]))
+		if (calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]) <= delta * delta  and 
+			check_repeat_lines(screen, pixel_arr, points[tr[i][1]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][1]], points[tr[i][2]], 1)
-			graph.add_edge(tr[i][1], tr[i][2], calc_len(points[tr[i][1]], points[tr[i][2]]))
-			flag = 1
-
-		if (check_collision(screen, pixel_arr, points[tr[i][0]], points[tr[i][2]], delta)):
+			graph.add_edge(tr[i][1], tr[i][2], calc_len_wosqrt(points[tr[i][1]], points[tr[i][2]]))
+		if (calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]) <= delta * delta  and
+			check_repeat_lines(screen, pixel_arr, points[tr[i][0]], points[tr[i][2]], 0)):
 			draw.line(screen.get_surface(), (255, 255, 255), points[tr[i][0]], points[tr[i][2]], 1)
-			graph.add_edge(tr[i][0], tr[i][2], calc_len(points[tr[i][0]], points[tr[i][2]]))
-			flag = 1
-		
-		if (flag):
+			graph.add_edge(tr[i][0], tr[i][2], calc_len_wosqrt(points[tr[i][0]], points[tr[i][2]]))
 			screen.update()
 			time.sleep(0.01)
-			flag = 0
 
 def draw_way(screen, graph, points, color_way):
 	way_to_cent, l1 = dijkstra(graph, 0, 1)	
@@ -150,7 +131,7 @@ def draw_way(screen, graph, points, color_way):
 	for i in range(1, len(spline_points)):
 		draw.line(screen.get_surface(), 0x00FF00, spline_points[i - 1], spline_points[i], 4)
 		screen.update()
-		time.sleep(0.005)
+		time.sleep(0.01)
 
 def main():
 	pygame.init()
@@ -168,7 +149,7 @@ def main():
 
 	screen.init()
 	screen.set_mode(size, pygame.RESIZABLE)
-	time.sleep(3)
+	time.sleep(5)
 	
 	pixel_arr = pygame.PixelArray(screen.get_surface())
 
@@ -183,9 +164,6 @@ def main():
 	points = generate_data_points(screen, pixel_arr, 1000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
 	graph = GraphUndirectedWeighted(len(points))
 	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
-	draw.circle(screen.get_surface(), (255, 0, 0), start_point, 5)
-	draw.circle(screen.get_surface(), (0, 255, 0), middle_point, 5)
-	draw.circle(screen.get_surface(), (255, 0, 0), end_point, 5)
 	draw_way(screen, graph, points, 0xFF0000)
 	screen.update()
 

@@ -30,6 +30,8 @@ def main():
 		points.append((it * 100 + 20, sin(it) * 100 + 150))
 		it += 3.14 / 2
 
+	points.append((750, 450))
+
 	screen = pygame.display
 
 	screen.init()
