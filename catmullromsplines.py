@@ -27,6 +27,15 @@ def catmullrom_splines(points):
 	p_begin = points[0]
 	p_end = points[len(points) - 1]
 
+	delta_b = (p_begin[0] - points[1][0], p_begin[1] - points[1][1])
+	delta_e = (points[len(points) - 2][0] - p_end[0], points[len(points) - 1][1] - p_end[1])
+
+	p_begin = (p_begin[0] + delta_b[0]/100, p_begin[1] + delta_b[1]/100)
+	p_end = (p_end[0] + delta_e[0]/100, p_end[1] + delta_e[1]/100)
+
+	# p_begin = (p_begin[0] + delta_b[0], p_begin[1] + delta_b[1])
+	# p_end = (p_end[0] + delta_e[0], p_end[1] + delta_e[1])
+
 	points.insert(0, p_begin)
 	points.append(p_end)
 

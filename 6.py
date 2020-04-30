@@ -180,7 +180,7 @@ def main():
 				generate_map(screen, colorA)
 		screen.update()
 
-	points = generate_data_points(screen, pixel_arr, 1000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
+	points = generate_data_points(screen, pixel_arr, 1000000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
 	graph = GraphUndirectedWeighted(len(points))
 	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
 	draw.circle(screen.get_surface(), (255, 0, 0), start_point, 5)
