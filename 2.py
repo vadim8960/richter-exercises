@@ -83,10 +83,12 @@ def main():
 					points = move_rect(i, j, rotation_rect)
 					draw.polygon(screen.get_surface(), colorAaug, points)
 					generate_map(screen, colorA)
+		points = move_rect(400, 200, rotation_rect)
+		draw.polygon(screen.get_surface(), (255, 0, 0), points)
 		screen.update()
 		pixel_arr[0:799, 0:400] = 0x000000
 		generate_map(screen, colorA)
-		ang += 0.05
+		ang += 0.5
 		rot_mat = [[cos(ang), -sin(ang)], [sin(ang), cos(ang)]]
 		rotation_rect = matrixmult(create_rect(0, 0, (23, 71)), rot_mat)
 	# screen.update()

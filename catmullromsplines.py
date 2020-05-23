@@ -1,4 +1,8 @@
+from math import *
 import numpy as np
+
+def calc_len(p1, p2):
+	return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])))
 
 def make_single_spline(p1, p2, p3, p4, count, tao):
 	p_x = np.matrix([[p1[0]],[p2[0]],[p3[0]],[p4[0]]])
@@ -30,11 +34,8 @@ def catmullrom_splines(points):
 	delta_b = (p_begin[0] - points[1][0], p_begin[1] - points[1][1])
 	delta_e = (points[len(points) - 2][0] - p_end[0], points[len(points) - 1][1] - p_end[1])
 
-	p_begin = (p_begin[0] + delta_b[0]/100, p_begin[1] + delta_b[1]/100)
-	p_end = (p_end[0] + delta_e[0]/100, p_end[1] + delta_e[1]/100)
-
-	# p_begin = (p_begin[0] + delta_b[0], p_begin[1] + delta_b[1])
-	# p_end = (p_end[0] + delta_e[0], p_end[1] + delta_e[1])
+	p_begin = (p_begin[0] - delta_b[0] / calc_len(p_begin, delta_b), p_begin[1] - delta_b[1] / calc_len(p_begin, delta_b))
+	p_end = (p_end[0] + delta_e[0] / calc_len(p_end, delta_e), p_end[1] + delta_e[1] / calc_len(p_end, delta_e))
 
 	points.insert(0, p_begin)
 	points.append(p_end)

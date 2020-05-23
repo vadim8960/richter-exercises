@@ -61,25 +61,3 @@ def dijkstra(graph, source, dest):
     shortest_path.reverse()
 
     return shortest_path, distances[dest]
-
-
-# def main():  
-#     g = GraphUndirectedWeighted(10)
-#     g.add_edge(0, 1, 30)  
-#     g.add_edge(0, 2, 100)  
-#     g.add_edge(0, 3, 80)  
-#     g.add_edge(1, 4, 40)  
-#     g.add_edge(2, 5, 60)  
-#     g.add_edge(3, 6, 80)  
-#     g.add_edge(3, 5, 100)  
-#     g.add_edge(6, 8, 90)  
-#     g.add_edge(5, 8, 30)  
-#     g.add_edge(5, 9, 80)  
-#     g.add_edge(5, 4, 20)  
-#     g.add_edge(4, 7, 70)  
-#     g.add_edge(7, 9, 40)  
-#     g.add_edge(8, 9, 10)  
-
-#     shortest_path, distance = dijkstra(g, 0, 9)
-#     print(shortest_path)
-#     print(distance)

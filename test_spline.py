@@ -28,7 +28,7 @@ def main():
 	it = 0
 	while (it <= 3 * 3.14):
 		points.append((it * 100 + 20, sin(it) * 100 + 150))
-		it += 3.14 / 2
+		it += 3.14 / 4
 
 	screen = pygame.display
 

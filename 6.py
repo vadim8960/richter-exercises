@@ -1,6 +1,5 @@
 import pygame 
 from pygame import *
-from math import *
 import random
 from delaunay2D import *
 from dijkstra import *
@@ -31,8 +30,8 @@ def generate_map(screen,  colorA):
 	draw.polygon(screen.get_surface(), colorA, create_rect(180, 170, (150, 150)))
 	draw.polygon(screen.get_surface(), colorA, create_rect(620, 230, (150, 150)))
 
-def calc_len(p1, p2):
-	return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])))
+# def calc_len(p1, p2):
+# 	return sqrt(((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1])))
 
 def generate_data_points(screen, pixel_arr, count, delta, colorA, colorAaug, p_b, p_m, p_e, size):
 	i = 0
@@ -180,7 +179,7 @@ def main():
 				generate_map(screen, colorA)
 		screen.update()
 
-	points = generate_data_points(screen, pixel_arr, 1000000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
+	points = generate_data_points(screen, pixel_arr, 1000, delta_rad, colorA, colorAaug, start_point, middle_point, end_point, size)
 	graph = GraphUndirectedWeighted(len(points))
 	draw_triangulation_lines(screen, pixel_arr, points, delta_rad, graph)
 	draw.circle(screen.get_surface(), (255, 0, 0), start_point, 5)
